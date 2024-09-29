@@ -80,24 +80,10 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
     except Exception as e:
         print(f"error occurred : {e}")
 
-'''
 def main():
     embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cpu"})
-    load_and_ingest_csv(DATA_PATH, content_column='review_text', embedding_model=embedding_model)
+    load_and_ingest_csv(DATA_PATH, content_column='combined_text', embedding_model=embedding_model)
 
 if __name__ == "__main__":
     main()
-
-'''
-embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cpu"})
-vectorstore_db = load_and_ingest_csv(DATA_PATH, content_column='review_text', embedding_model=embedding_model)
-
-query = "What do users think about the music recommendation feature?"
-
-results = vectorstore_db.similarity_search(query)
-
-for result in results:
-    print(f"Review ID: {result.metadata['review_id']}")
-    print(f"Review Text: {result.page_content}")
-    print("\n---\n")
 
