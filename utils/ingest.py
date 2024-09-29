@@ -12,6 +12,12 @@ EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 DATA_PATH = "data/raw_data/SPOTIFY_REVIEWS.csv"
 FAISS_PATH = "vectorstore/"
 
+
+def combine_metadata_with_text(df):
+    df['combined_text'] = df.apply(lambda row: f"Rating: {row['review_rating']}, Date: {row['review_timestamp']}, Review: {row['review_text']}", axis=1)
+    return df
+
+
 def ingest_to_vector(df, content_column, embedding_model):
     """
     Ingests data from a DataFrame into a vector database.
@@ -57,9 +63,10 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
         
         df['review_text'] = df['review_text'].str.lower()
         df['review_text'] = df['review_text'].str.replace('[^\w\s]', '', regex=True)
-        
-        df = df[['review_id', 'review_text']]
-        #df = df[:1000]
+        df = df[['review_id', 'review_text', 'review_rating', 'review_timestamp']]
+        df = df[:1000]
+
+        df = combine_metadata_with_text(df)
 
         vectordb = ingest_to_vector(df, content_column=content_column, embedding_model=embedding_model)
         
@@ -73,7 +80,7 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
     except Exception as e:
         print(f"error occurred : {e}")
 
-
+'''
 def main():
     embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cpu"})
     load_and_ingest_csv(DATA_PATH, content_column='review_text', embedding_model=embedding_model)
@@ -94,4 +101,3 @@ for result in results:
     print(f"Review Text: {result.page_content}")
     print("\n---\n")
 
-'''
