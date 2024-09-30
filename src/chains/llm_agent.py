@@ -14,26 +14,25 @@ class ChatBot:
         Use the LLM to classify the type of question being asked (e.g., sentiment, trends, or general).
         """
         system_message = SystemMessage(
-            content="""You are an expert in analyzing user reviews. Based on the following question, classify the type of analysis required.
-            The possible types are: 'sentiment', 'trends', 'comparison', or 'general'. Based on the question, return only the type of analysis required.
-            Use the following examples as a guide:
-            
-            Examples:
-            
-            1. Question: "What do users think about the new music recommendation feature?"
-            Classification: 'sentiment'
+        content="""You are an expert in analyzing user reviews. Based on the following question, classify the type of analysis required.
+        The possible types are: 'sentiment', 'trends', 'comparison', or 'general'. Based on the question, return only the type of analysis required.
+        Use the following examples as a guide:
+        
+        Examples:
+        
+        1. Question: "What do users think about the new music recommendation feature?"
+           Classification: 'sentiment'
 
-            2. Question: "What are the emerging trends in the latest user reviews?"
-            Classification: 'trends'
+        2. Question: "What are the emerging trends in the latest user reviews?"
+           Classification: 'trends'
 
-            3. Question: "How does our app compare to Apple Music in terms of features?"
-            Classification: 'comparison'
+        3. Question: "How does our app compare to Apple Music in terms of features?"
+           Classification: 'comparison'
 
-            4. Question: "What do users typically look for in a music streaming app?"
-            Classification: 'general'
-            """
-        )
-
+        4. Question: "What do users typically look for in a music streaming app?"
+           Classification: 'general'
+        """
+    )
 
         user_message = HumanMessage(content=f"Classify this question: {question}")
 
@@ -46,7 +45,7 @@ class ChatBot:
         """
         Based on the classified query type (sentiment, trends, etc.), handle the analysis and prompt generation dynamically.
         """
-        context = "\n\n".join(doc for doc in docs)
+        context = "\n\n".join(doc.page_content if hasattr(doc, 'page_content') else str(doc) for doc in docs)
 
         if query_type == "sentiment":
             system_message = SystemMessage(
