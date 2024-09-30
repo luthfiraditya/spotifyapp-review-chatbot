@@ -12,6 +12,8 @@ from langchain.tools.render import format_tool_to_openai_function
 import pandas as pd
 from datetime import datetime
 
+from src.chains.llm_agent import ChatBot
+
 
 DATA_PATH = "data/processed/applicant_resume.csv"  
 FAISS_PATH = "vectorstore/"
@@ -97,41 +99,18 @@ class RagRetriever():
 
 
 class SelfQueryRetriever(RagRetriever):
-    def __init__(self, vectorstore_db, df):
+    def __init__(self, vectorstore_db, df, api_key, model):
         super().__init__(vectorstore_db, df)
+        self.chatbot = ChatBot(api_key, model)
 
-        self.prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an expert in analyzing Spotify reviews."),
-            ("user", "{input}")
-        ])
-
-        self.meta_data = {
-            "rag_mode": "",
-            "query_type": "no_retrieve",
-            "extracted_input": "",
-            "subquestion_list": [],
-            "retrieved_docs_with_scores": []
-        }
-
-    def retrieve_docs(self, question, llm, rag_mode: str):
+    def retrieve_docs(self, question: str, history=None):
         """
-        Extended functionality to handle specific questions like those related to time (emerging trends) or dissatisfaction (rating).
+        Dynamically retrieve documents based on query classification (sentiment, trends, or general).
         """
-        if "emerging trends" in question.lower():  # Handle time-based trends
-            print("Handling time-based question...")
-            return self.retrieve_by_time_and_rating([question], time_window_days=30)
+        query_type = self.chatbot.classify_query(question)
+        print(query_type)
+        docs = self.retrieve_documents_with_id(self.retrieve_id_and_rerank([question]))
 
-        elif "dissatisfaction" in question.lower():  
-            print("Handling dissatisfaction-based question...")
-            return self.retrieve_by_time_and_rating([question], rating_threshold=2.0)
-
-        else:
-            subquestion_list = [question]
-            if rag_mode == "RAG Fusion":
-                subquestion_list += llm.generate_subquestions(question)
-
-            self.meta_data["subquestion_list"] = subquestion_list
-            retrieved_ids = self.retrieve_id_and_rerank(subquestion_list)
-            self.meta_data["retrieved_docs_with_scores"] = retrieved_ids
-            retrieved_resumes = self.retrieve_documents_with_id(retrieved_ids)
-            return retrieved_resumes
+        response = self.chatbot.handle_query(question, docs, query_type)
+        
+        return response
