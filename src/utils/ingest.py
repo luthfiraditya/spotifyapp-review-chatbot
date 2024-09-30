@@ -31,9 +31,17 @@ def ingest_to_vector(df, content_column, embedding_model):
         FAISS: The created FAISS vector database.
     """
 
-    df[content_column].fillna("", inplace=True)
-    loader = DataFrameLoader(df, page_content_column=content_column)
-    documents = loader.load()
+    documents = [
+        Document(
+            page_content=row[content_column],
+            metadata={
+                "review_id": str(row["review_id"]),
+                "review_rating": float(row["review_rating"]),
+                "review_timestamp": row["review_timestamp"]
+            }
+        )
+        for _, row in df.iterrows()
+    ]
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=500)
     document_chunks = text_splitter.split_documents(documents)
@@ -64,9 +72,10 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
         df['review_text'] = df['review_text'].str.lower()
         df['review_text'] = df['review_text'].str.replace('[^\w\s]', '', regex=True)
         df = df[['review_id', 'review_text', 'review_rating', 'review_timestamp']]
+        df.sort_values(by=['review_timestamp'], ascending=False,inplace=True)
         df = df[:50000]
 
-        df = combine_metadata_with_text(df)
+        #df = combine_metadata_with_text(df)
 
         vectordb = ingest_to_vector(df, content_column=content_column, embedding_model=embedding_model)
         
@@ -82,21 +91,8 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
 
 def main():
     embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cuda"})
-    load_and_ingest_csv(DATA_PATH, content_column='combined_text', embedding_model=embedding_model)
+    load_and_ingest_csv(DATA_PATH, content_column='review_text', embedding_model=embedding_model)
 
 if __name__ == "__main__":
     main()
 
-
-
-
-'''
-embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cpu"})
-vectorstore_db = load_and_ingest_csv(DATA_PATH, content_column='combined_text', embedding_model=embedding_model)
-query = "What are the specific features or aspects that users appreciate the most in our application?"
-results = vectorstore_db.similarity_search(query)
-for result in results:
-    print(f"Review ID: {result.metadata['review_id']}")
-    print(f"Review Text: {result.page_content}")
-    print("\n---\n")
-'''
