@@ -64,7 +64,7 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
         df['review_text'] = df['review_text'].str.lower()
         df['review_text'] = df['review_text'].str.replace('[^\w\s]', '', regex=True)
         df = df[['review_id', 'review_text', 'review_rating', 'review_timestamp']]
-        df = df[:1000]
+        df = df[:50000]
 
         df = combine_metadata_with_text(df)
 
@@ -81,9 +81,22 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
         print(f"error occurred : {e}")
 
 def main():
-    embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cpu"})
+    embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cuda"})
     load_and_ingest_csv(DATA_PATH, content_column='combined_text', embedding_model=embedding_model)
 
 if __name__ == "__main__":
     main()
 
+
+
+
+'''
+embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cpu"})
+vectorstore_db = load_and_ingest_csv(DATA_PATH, content_column='combined_text', embedding_model=embedding_model)
+query = "What are the specific features or aspects that users appreciate the most in our application?"
+results = vectorstore_db.similarity_search(query)
+for result in results:
+    print(f"Review ID: {result.metadata['review_id']}")
+    print(f"Review Text: {result.page_content}")
+    print("\n---\n")
+'''
