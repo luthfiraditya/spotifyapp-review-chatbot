@@ -105,9 +105,10 @@ This will launch a web-based interface where you can interact with the chatbot.
 
 You can ask natural language questions like:
 
-- "What are the trends in Spotify reviews from the last 90 days?"
-- "Find me reviews with a rating higher than 3."
-- "What do users think about the new music recommendation feature?"
+- "What do users say about our app's ability to help them discover new music?"
+- "How do users feel about the app’s personalization and recommendation algorithms?"
+- "Which features of our app do users find most difficult to use?"
+- "Are there any specific improvements users would like to see in the app's mobile experience?"
 
 The chatbot will process the query, retrieve relevant documents, and respond based on the reviews stored in the vector database.
 
@@ -125,6 +126,6 @@ This script includes test cases for trend queries, rating queries, and sentiment
 
 
 ## NOTES
-- process preprocessing belum optimal terutama untuk review_text, ada review text yang bukan bahasa inggris
-- hasil chatbot dapat dilihat di folder result/llm_response/
-- Saya belum sempat menambahkan process evaluation, awalnya mau pake RAGAS, cuman karna keterbatasan waktu, hal itu tidak sempat saya lakukan
+- The preprocessing process is not yet optimal, especially for review_text, as there are some review texts that are not in English.
+- The chatbot results can be found in the folder result/llm_response/.
+- I haven't had the chance to add the evaluation process yet. Initially, I planned to use RAGAS, but due to time constraints, I wasn't able to implement it.
