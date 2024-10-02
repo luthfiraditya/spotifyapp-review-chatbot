@@ -11,29 +11,25 @@ class ChatBot:
 
     def classify_query(self, question: str):
         """
-        Use the LLM to classify the type of question being asked (e.g., sentiment, trends, or general).
+        Use the LLM to classify the type of question being asked (e.g., comparison, trends, or general).
         """
         system_message = SystemMessage(
         content="""You are an expert in analyzing user reviews. Based on the following question, classify the type of analysis required.
-        The possible types are: 'sentiment', 'trends', 'comparison', or 'general'. Based on the question, return only the type of analysis required.
+        The possible types are: 'trends', 'comparison', or 'general'. Based on the question, return only the type of analysis required.
         Use the following examples as a guide:
         
         Examples:
         
-        1. Question: "What do users think about the new music recommendation feature?"
-           Classification: 'sentiment'
 
-        2. Question: "What are the emerging trends in the latest user reviews?"
+        1. Question: "What are the emerging trends in the latest user reviews?"
            Classification: 'trends'
 
-        3. Question: "How does our app compare to Apple Music in terms of features?"
+        2. Question: "How does our app compare to Apple Music in terms of features?"
            Classification: 'comparison'
 
-        4. Question: "What do users typically look for in a music streaming app?"
+        3. Question: "What do users typically look for in a music streaming app?"
            Classification: 'general'
 
-        5. Question: "What are the specific features or aspects that users appreciate the most in our application?"
-           Classification: 'sentiment'
         """
     )
 
@@ -50,28 +46,30 @@ class ChatBot:
         """
         context = "\n\n".join(doc.page_content if hasattr(doc, 'page_content') else str(doc) for doc in docs)
 
-        if query_type == "sentiment":
-            system_message = SystemMessage(
-                content="""
-                You are an expert in analyzing Spotify reviews to determine user sentiment (positive or negative).
-                Based on the following reviews, identify the general sentiment and provide your analysis.
-                """
-            )
 
-        elif query_type == "trends":
+        if query_type == "trends":
             system_message = SystemMessage(
                 content="""
                 You are an expert in analyzing Spotify reviews to detect emerging trends.
                 Based on the following reviews, identify key trends that have emerged recently.
                 """
             )
-    
-        
+
+        elif query_type == "comparison":
+            system_message = SystemMessage(
+                content="""
+                You are an expert in comparing user reviews between different apps or features.
+                Based on the following Spotify reviews, compare Spotify to another music streaming app or service.
+            Highlight key differences in user satisfaction, features, performance, or any other aspects that stand out in the reviews.
+                """
+            )
+
         else:
             system_message = SystemMessage(
                 content="""
-                You are an expert in analyzing Spotify reviews.
-                Based on the following reviews, provide an insightful response to the user's question.
+               You are an expert in analyzing Spotify reviews.
+        Based on the following reviews, provide a clear and concise response directly answering the user's question.
+        Focus on the key points users mentioned, avoiding unnecessary elaboration unless specifically relevant.
                 """
             )
 
