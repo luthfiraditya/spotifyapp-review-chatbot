@@ -31,6 +31,9 @@ class ChatBot:
 
         4. Question: "What do users typically look for in a music streaming app?"
            Classification: 'general'
+
+        5. Question: "What are the specific features or aspects that users appreciate the most in our application?"
+           Classification: 'sentiment'
         """
     )
 
@@ -59,9 +62,10 @@ class ChatBot:
             system_message = SystemMessage(
                 content="""
                 You are an expert in analyzing Spotify reviews to detect emerging trends.
-                Based on the following reviews, identify key trends that have emerged recently, especially in the last 30 days.
+                Based on the following reviews, identify key trends that have emerged recently.
                 """
             )
+    
         
         else:
             system_message = SystemMessage(
