@@ -11,9 +11,44 @@ from src.utils.retriever import SelfQueryRetriever
 from src.chains.llm_agent import ChatBot
 
 
-DATA_PATH = "data/raw_data/SPOTIFY_REVIEWS.csv"
+DATA_PATH = "data/processed/SPOTIFY_REVIEWS.csv"
 FAISS_PATH = "vectorstore/"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+
+
+
+welcome_message = """
+  #### Introduction 🚀
+
+  The chatbot is a RAG pipeline designed for discussing Spotify app user reviews from the Google Play Store.
+
+  #### Getting started 🛠️
+
+  1. To set up, please add your OpenAI's API key. 🔑 
+  2. Type in the question you want to ask about user reviews on the Spotify app. 💬
+
+  Please make sure to check the sidebar for more useful information. 💡
+
+"""
+
+usage_information = """
+
+
+  1. Put your OpenAPI key on `OpenAI API Key` section. You need to give the OpenAPI key that can be generated here : https://platform.openai.com/api-keys
+  
+  2. If it's valid, you can choose OpenAI model that you want to Use
+  
+  3. Your data is not being stored anyhow by the program. Everything is recorded in a Streamlit session state and will be removed once you refresh the app. However, it must be mentioned that the **uploaded data will be processed directly by OpenAI's GPT**, which I do not have control over. 
+"""
+
+
+
+def clear_message(): 
+    st.session_state.resume_list = []
+    st.session_state.chat_history = [AIMessage(content=welcome_message)]
+
+
+
 
 st.set_page_config(page_title="Spotify Review Chatbot")
 st.title("Spotify Review Chatbot with LLM")
@@ -23,7 +58,7 @@ if "chat_history" not in st.session_state:
 
 if "embedding_model" not in st.session_state:
     st.session_state.embedding_model = HuggingFaceEmbeddings(
-        model_name=EMBEDDING_MODEL, model_kwargs={"device": "cpu"}
+        model_name=EMBEDDING_MODEL, model_kwargs={"device": "cuda"}
     )
 
 if "df" not in st.session_state:
@@ -37,11 +72,18 @@ if "vector_db" not in st.session_state:
 st.sidebar.title("Spotify Review Chatbot")
 api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 
+with st.sidebar.expander("ℹ️ Usage Information", expanded=False):
+    st.markdown(usage_information)
+
 if not api_key:
     st.info("Please provide your OpenAI API key.")
     st.stop()
 
 gpt_selection = st.sidebar.selectbox("GPT Model", ["gpt-4o","gpt-3.5-turbo"], placeholder="gpt-4o", key="gpt_selection")
+
+st.sidebar.button("Clear conversation", on_click = clear_message)
+
+
 
 if "retriever" not in st.session_state:
     st.session_state.retriever = SelfQueryRetriever(st.session_state.vector_db, st.session_state.df, api_key, gpt_selection)
