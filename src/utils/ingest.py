@@ -1,5 +1,4 @@
 import pandas as pd
-import faiss
 import numpy as np
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -9,8 +8,8 @@ from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.docstore.document import Document
 
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-DATA_PATH = "data/raw_data/SPOTIFY_REVIEWS.csv"
-FAISS_PATH = "vectorstore/"
+DATA_PATH = "data/processed/SPOTIFY_REVIEWS.csv"
+FAISS_PATH = "vectorstore_140/"
 
 
 def combine_metadata_with_text(df):
@@ -30,6 +29,7 @@ def ingest_to_vector(df, content_column, embedding_model):
     Returns:
         FAISS: The created FAISS vector database.
     """
+    df[content_column].fillna("", inplace=True)
 
     documents = [
         Document(
@@ -68,12 +68,7 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
     """
     try:
         df = pd.read_csv(csv_path)
-        
-        df['review_text'] = df['review_text'].str.lower()
-        df['review_text'] = df['review_text'].str.replace('[^\w\s]', '', regex=True)
-        df = df[['review_id', 'review_text', 'review_rating', 'review_timestamp']]
-        df.sort_values(by=['review_timestamp'], ascending=False,inplace=True)
-        df = df[:50000]
+        df = df[:140000]
 
         #df = combine_metadata_with_text(df)
 
@@ -87,7 +82,9 @@ def load_and_ingest_csv(csv_path, content_column, embedding_model):
     except FileNotFoundError as e:
         print(f"Error on File: {e}")
     except Exception as e:
-        print(f"error occurred : {e}")
+        import traceback
+        print(f"Error occurred: {e}")
+        print(traceback.format_exc()) 
 
 def main():
     embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME, model_kwargs={"device": "cuda"})
