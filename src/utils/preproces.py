@@ -35,8 +35,12 @@ def clean_spotify_reviews(input_csv, output_csv):
     df['review_text'] = df['review_text'].str.lower()
     df['review_text'] = df['review_text'].str.replace(r'[^a-z\s]', '', regex=True)
     df['review_text'] = df['review_text'].str.strip()
-    df = df.sort_values(by=['review_timestamp'], ascending=False)
+    df['word_count'] = df['review_text'].apply(lambda x: len(x.split()))
+    
+    df = df.sort_values(by='word_count', ascending=False)
+    
     df = df[['review_id', 'review_text', 'review_rating', 'review_timestamp']]
+
     df.to_csv(output_csv, index=False)
 
 def main():
