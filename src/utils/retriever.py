@@ -11,7 +11,7 @@ from src.chains.llm_agent import ChatBot
 DATA_PATH = "data/processed/SPOTIFY_REVIEWS.csv"  
 FAISS_PATH = "vectorstore/"
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-RAG_K_THRESHOLD = 10
+RAG_K_THRESHOLD = 5
 
 
 class RagRetriever():
